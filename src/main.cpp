@@ -4,12 +4,18 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+#include "./dht.hpp"
+
 // access point credentials
 #include "./apCfg.hpp"
+
 // mqtt broker
-constexpr const char *server = "test.mosquitto.org";
-constexpr const char *topic = "esp8266_arduino_out";
+constexpr char *server = "test.mosquitto.org";
+constexpr char *topic = "esp8266_arduino_out";
 constexpr int mqttPort = 1833;
+
+
+
 
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
@@ -85,6 +91,7 @@ void setup() {
   // pinMode(D1, INPUT);
   Serial.begin(115200);
   delay(10);
+  dhtSetup();
 
   /* Connecting to MQTT Broker:
    * 1. connect to an AP and recivce the client's name using @connectWifi
@@ -98,12 +105,30 @@ void setup() {
 
 void loop() {
   static int counter = 0;
+  String payload;
 
-  String payload = "{\"micros\":";
+  auto addDHTpayload = [&payload]() {
+    float temp, humid;
+    dhtRead(temp, humid);
+
+    payload += "\"air temperature\":";
+    payload += temp;
+    payload += ",\"air humidity\":";
+    payload += humid;
+  };
+
+  payload = "{";
+
+  payload += "{\"micros\":";
   payload += micros();
   payload += ",\"counter\":";
   payload += counter;
+
+  addDHTpayload();
+
   payload += "}";
+
+
 
   if (client.connected()) {
     Serial.print("Sending payload: ");
