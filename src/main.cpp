@@ -10,15 +10,15 @@
 #include "./apCfg.hpp"
 
 // mqtt broker
-constexpr char *server = "test.mosquitto.org";
-constexpr char *topic = "esp8266_arduino_out";
-constexpr int mqttPort = 1833;
-
+constexpr char *server = "192.168.43.194";
+constexpr char *topic = "esp8266";
+constexpr int mqttPort = 1883;
 
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
+  Serial.println("recived");
 }
 
 // wifi stuff
@@ -82,6 +82,7 @@ inline void connect2MQTTBroker(const String &clientName) {
   } else {
     Serial.println("MQTT connect failed");
     Serial.println("Will reset and try again...");
+    delay(128 * 1000 * 10);
     abort();
   }
 }
@@ -111,7 +112,7 @@ void loop() {
     float temp, humid;
     dhtRead(temp, humid);
 
-    payload += "\"air temperature\":";
+    payload += ",\"air temperature\":";
     payload += temp;
     payload += ",\"air humidity\":";
     payload += humid;
