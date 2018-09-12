@@ -108,7 +108,7 @@ void loop() {
   static int counter = 0;
   String payload;
 
-  auto addDHTpayload = [&payload]() {
+  constexpr auto addDHTpayload = [](String &payload) {
     float temp, humid;
     dhtRead(temp, humid);
 
@@ -118,6 +118,19 @@ void loop() {
     payload += humid;
   };
 
+  constexpr auto publishPayload = [](const String &payload) {
+    if (client.connected()) {
+      Serial.print("Publishing payload: ");
+      Serial.println(payload);
+
+      if (client.publish(topic, (char *)payload.c_str())) {
+        Serial.println("Publish ok");
+      } else {
+        Serial.println("Publish failed");
+      }
+    }
+  };
+
   payload = "{";
 
   payload += "{\"micros\":";
@@ -125,22 +138,11 @@ void loop() {
   payload += ",\"counter\":";
   payload += counter;
 
-  addDHTpayload();
+  addDHTpayload(payload);
 
   payload += "}";
 
-
-
-  if (client.connected()) {
-    Serial.print("Sending payload: ");
-    Serial.println(payload);
-
-    if (client.publish(topic, (char *)payload.c_str())) {
-      Serial.println("Publish ok");
-    } else {
-      Serial.println("Publish failed");
-    }
-  }
+  publishPayload(payload);
   ++counter;
   delay(5000);
 
