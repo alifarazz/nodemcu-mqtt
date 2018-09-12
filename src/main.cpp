@@ -4,13 +4,14 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-#include "./dht.hpp"
-
+#include "./sensors/dht.hpp"
+#include "./sensors/pir.hpp"
+#include "./sensors/mq9.hpp"
 // access point credentials
 #include "./apCfg.hpp"
 
 // mqtt broker
-constexpr char *server = "192.168.43.194";
+constexpr char *server = "192.168.1.35";
 constexpr char *topic = "esp8266";
 constexpr int mqttPort = 1883;
 
@@ -27,7 +28,6 @@ PubSubClient client(server, mqttPort, callback, wifiClient);
 
 int status = WL_IDLE_STATUS;
 unsigned long lastSend;
-
 
 inline void connectWifi(String &clientName) {
   constexpr auto mac2Str = [](uint8_t *mac) {
@@ -82,7 +82,7 @@ inline void connect2MQTTBroker(const String &clientName) {
   } else {
     Serial.println("MQTT connect failed");
     Serial.println("Will reset and try again...");
-    delay(128 * 1000 * 10);
+    //delay(128 * 1000 * 10);
     abort();
   }
 }
@@ -92,8 +92,9 @@ void setup() {
   // pinMode(D1, INPUT);
   Serial.begin(115200);
   delay(10);
-  dhtSetup();
-
+  DhtSetup();
+  PirSetup();
+  Mq9Setup();
   /* Connecting to MQTT Broker:
    * 1. connect to an AP and recivce the client's name using @connectWifi
    * 2. connect to MQTT broker and publish a sample message using
@@ -110,12 +111,25 @@ void loop() {
 
   constexpr auto addDHTpayload = [](String &payload) {
     float temp, humid;
-    dhtRead(temp, humid);
+    DhtRead(temp, humid);
 
     payload += ",\"air temperature\":";
     payload += temp;
     payload += ",\"air humidity\":";
     payload += humid;
+  };
+
+  constexpr auto addPirpayload = [](String &payload){
+    int state;
+    PirRead(state);
+    payload += ",\"Motion State\":";
+    payload += state;
+  };
+  constexpr auto addMQ9payload = [](String &payload){
+    int state;
+    Mq9Read(state);
+    payload +=",\"Gas Sensor\":";
+    payload +=state;
   };
 
   constexpr auto publishPayload = [](const String &payload) {
@@ -140,15 +154,13 @@ void loop() {
 
   addDHTpayload(payload);
 
+  addPirpayload(payload);
+  
+  addMQ9payload(payload);
+  
   payload += "}";
 
   publishPayload(payload);
   ++counter;
   delay(5000);
-
-  // Serial.write(digitalRead(D1)+'0');
-  // digitalWrite(D0, HIGH);
-  // delay(1000);
-  // digitalWrite(D0, LOW);
-  // delay(1000);
 }
