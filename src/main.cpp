@@ -5,12 +5,12 @@
 #include <PubSubClient.h>
 
 #include "./dht.hpp"
-
+#include "./Pir.hpp"
 // access point credentials
 #include "./apCfg.hpp"
 
 // mqtt broker
-constexpr char *server = "192.168.43.194";
+constexpr char *server = "192.168.1.35";
 constexpr char *topic = "esp8266";
 constexpr int mqttPort = 1883;
 
@@ -27,7 +27,6 @@ PubSubClient client(server, mqttPort, callback, wifiClient);
 
 int status = WL_IDLE_STATUS;
 unsigned long lastSend;
-
 
 inline void connectWifi(String &clientName) {
   constexpr auto mac2Str = [](uint8_t *mac) {
@@ -93,6 +92,7 @@ void setup() {
   Serial.begin(115200);
   delay(10);
   dhtSetup();
+  PirSetup();
 
   /* Connecting to MQTT Broker:
    * 1. connect to an AP and recivce the client's name using @connectWifi
@@ -139,6 +139,15 @@ void loop() {
   payload += counter;
 
   addDHTpayload(payload);
+
+  auto addPirpayload = [&payload](){
+    int state;
+    PirRead(state);
+    payload += ",\"Motion State\":";
+    payload += state; 
+  };  
+
+  addPirpayload();
 
   payload += "}";
 
