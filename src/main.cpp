@@ -97,6 +97,7 @@ void setup() {
   delay(10);
   DhtSetup();
   PirSetup();
+  Mq9Setup();
   /* Connecting to MQTT Broker:
    * 1. connect to an AP and recivce the client's name using @connectWifi
    * 2. connect to MQTT broker and publish a sample message using
@@ -128,6 +129,13 @@ void loop() {
     payload += state;
   };
 
+  constexpr auto addMQ9payload = [](String &payload){
+    int state;
+    Mq9Read(state);
+    payload +=",\"Gas Sensor\":";
+    payload +=state;
+  };
+
   constexpr auto publishPayload = [](const String &payload) {
     if (client.connected()) {
       Serial.print("Publishing payload: ");
@@ -151,6 +159,9 @@ void loop() {
   addDHTpayload(payload);
 
   addPirpayload(payload);
+  
+  addMQ9payload(payload);
+  
   payload += "}";
 
   publishPayload(payload);

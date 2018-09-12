@@ -10,10 +10,10 @@ void Mq9Setup(){
     pinMode(MQ_Pin,INPUT);
 }
 void Mq9Read(int & state){
-    state = !digitalRead(MQ_Pin);
+    state = digitalRead(MQ_Pin);
     Serial.println(state);
 
-    if (~state){
+    if (state){
         Serial.println("Gas detected!");
     }
     else{
