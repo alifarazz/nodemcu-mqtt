@@ -14,7 +14,7 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 
 uint32_t DHT_delayMS;
 
-void dhtSetup() {
+void DhtSetup() {
   sensor_t sensor;
 
   dht.begin();
@@ -25,7 +25,7 @@ void dhtSetup() {
   DHT_delayMS = max((int32_t)DHT_delayMS, sensor.min_delay / 1000);
 }
 
-int dhtRead(float &temp, float &humid) {
+int DhtRead(float &temp, float &humid) {
   sensors_event_t event;
 
   dht.temperature().getEvent(&event);

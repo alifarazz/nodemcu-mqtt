@@ -4,8 +4,8 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-#include "./dht.hpp"
-#include "./Pir.hpp"
+#include "./sensors/dht.hpp"
+#include "./sensors/pir.hpp"
 // access point credentials
 #include "./apCfg.hpp"
 
@@ -81,7 +81,7 @@ inline void connect2MQTTBroker(const String &clientName) {
   } else {
     Serial.println("MQTT connect failed");
     Serial.println("Will reset and try again...");
-    delay(128 * 1000 * 10);
+    //delay(128 * 1000 * 10);
     abort();
   }
 }
@@ -91,7 +91,7 @@ void setup() {
   // pinMode(D1, INPUT);
   Serial.begin(115200);
   delay(10);
-  dhtSetup();
+  DhtSetup();
   PirSetup();
 
   /* Connecting to MQTT Broker:
@@ -110,12 +110,19 @@ void loop() {
 
   constexpr auto addDHTpayload = [](String &payload) {
     float temp, humid;
-    dhtRead(temp, humid);
+    DhtRead(temp, humid);
 
     payload += ",\"air temperature\":";
     payload += temp;
     payload += ",\"air humidity\":";
     payload += humid;
+  };
+
+  constexpr auto addPirpayload = [](String &payload){
+    int state;
+    PirRead(state);
+    payload += ",\"Motion State\":";
+    payload += state;
   };
 
   constexpr auto publishPayload = [](const String &payload) {
@@ -140,14 +147,7 @@ void loop() {
 
   addDHTpayload(payload);
 
-  auto addPirpayload = [&payload](){
-    int state;
-    PirRead(state);
-    payload += ",\"Motion State\":";
-    payload += state; 
-  };  
-
-  addPirpayload();
+  addPirpayload(payload);
 
   payload += "}";
 

@@ -4,3 +4,5 @@
 .gcc-flags.json
 src/apCfg.hpp
 .vscode/
+.pioenvs
+.piolibdeps
