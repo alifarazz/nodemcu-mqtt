@@ -5,11 +5,10 @@
 #include <PubSubClient.h>
 
 #include "./sensors/dht.hpp"
-#include "./sensors/pir.hpp"
-<<<<<<< HEAD
 #include "./sensors/mq9.hpp"
-=======
->>>>>>> 27c64ce9d0aa0ffc006e9c5935e46605923a57c8
+#include "./sensors/pir.hpp"
+#include "./sensors/yl69.hpp"
+
 // access point credentials
 #include "./apCfg.hpp"
 
@@ -18,9 +17,7 @@ constexpr char *server = "192.168.1.35";
 constexpr char *topic = "esp8266";
 constexpr int mqttPort = 1883;
 
-
-
-void callback(char* topic, byte* payload, unsigned int length) {
+void callback(char *topic, byte *payload, unsigned int length) {
   // handle message arrived
   Serial.println("recived");
 }
@@ -85,7 +82,7 @@ inline void connect2MQTTBroker(const String &clientName) {
   } else {
     Serial.println("MQTT connect failed");
     Serial.println("Will reset and try again...");
-    //delay(128 * 1000 * 10);
+    // delay(128 * 1000 * 10);
     abort();
   }
 }
@@ -98,6 +95,8 @@ void setup() {
   DhtSetup();
   PirSetup();
   Mq9Setup();
+  Yl69Setup();
+
   /* Connecting to MQTT Broker:
    * 1. connect to an AP and recivce the client's name using @connectWifi
    * 2. connect to MQTT broker and publish a sample message using
@@ -122,18 +121,28 @@ void loop() {
     payload += humid;
   };
 
-  constexpr auto addPirpayload = [](String &payload){
+  constexpr auto addPirpayload = [](String &payload) {
     int state;
     PirRead(state);
+
     payload += ",\"Motion State\":";
     payload += state;
   };
 
-  constexpr auto addMQ9payload = [](String &payload){
+  constexpr auto addMQ9payload = [](String &payload) {
     int state;
     Mq9Read(state);
-    payload +=",\"Gas Sensor\":";
-    payload +=state;
+
+    payload += ",\"Gas Sensor\":";
+    payload += state;
+  };
+
+  constexpr auto addYL69payload = [](String &payload) {
+    int state;
+    Yl69Read(state);
+
+    payload += ",\"Soil Moisture:\":";
+    payload += state;
   };
 
   constexpr auto publishPayload = [](const String &payload) {
@@ -157,11 +166,10 @@ void loop() {
   payload += counter;
 
   addDHTpayload(payload);
-
   addPirpayload(payload);
-  
   addMQ9payload(payload);
-  
+  addYL69payload(payload);
+
   payload += "}";
 
   publishPayload(payload);

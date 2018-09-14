@@ -3,21 +3,23 @@
 
 #include <Arduino.h>
 
-constexpr auto Motion_Pin = D0 ;
+constexpr auto PIR_PIN = D0;
 
-void PirSetup(){
-    pinMode(Motion_Pin,INPUT);
-}
-void PirRead(int &state){
-    state = digitalRead(Motion_Pin);
-    Serial.println(state);
+void PirSetup() { pinMode(PIR_PIN, INPUT); }
 
-    if (state){
-        Serial.println("Motion detected!");
-    }
-    else{
-        Serial.println("No Motion");
-    }
+int PirRead(int &state) {
+  state = digitalRead(PIR_PIN);
+  Serial.println(state);
+
+  if (state) {
+    Serial.println("Motion detected!");
+  } else {
+    Serial.println("No Motion");
+  }
+
+  return 0;
 }
+
+// TODO: add error-checking
 
 #endif

@@ -3,22 +3,23 @@
 
 #include <Arduino.h>
 
-constexpr auto MQ_Pin = 10 ;
+constexpr auto MQ9_PIN = 10;
 
+void Mq9Setup() { pinMode(MQ9_PIN, INPUT); }
 
-void Mq9Setup(){
-    pinMode(MQ_Pin,INPUT);
+int Mq9Read(int &state) {
+  state = digitalRead(MQ9_PIN);
+  Serial.println(state);
+
+  if (state) {
+    Serial.println("Gas detected!");
+  } else {
+    Serial.println("No Gas");
+  }
+
+  return 0;
 }
-void Mq9Read(int & state){
-    state = digitalRead(MQ_Pin);
-    Serial.println(state);
 
-    if (state){
-        Serial.println("Gas detected!");
-    }
-    else{
-        Serial.println("No Gas");
-    }
-}
+// TODO: add error-checking
 
 #endif

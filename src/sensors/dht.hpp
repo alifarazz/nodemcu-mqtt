@@ -7,10 +7,10 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-constexpr auto DHTPIN = D1;
-constexpr auto DHTTYPE = DHT22;
+constexpr auto DHT_PIN = D1;
+constexpr auto DHT_TYPE = DHT22;
 
-DHT_Unified dht(DHTPIN, DHTTYPE);
+DHT_Unified dht(DHT_PIN, DHT_TYPE);
 
 uint32_t DHT_delayMS;
 
